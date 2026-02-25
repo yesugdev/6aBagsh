@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Student Active Evaluation System</title>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;800&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --c1: #FF6B6B;
+      --c2: #FF9F43;
+      --c3: #FECA57;
+      --c4: #48DBFB;
+      --c5: #1DD1A1;
+      --bg: #1a1a2e;
+      --card: #16213e;
+      --text: #f0f0ff;
+    }
+
+    body {
+      min-height: 100vh;
+      background: var(--bg);
+      font-family: 'Nunito', sans-serif;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Animated background stars */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(1px 1px at 10% 20%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 30% 60%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 70% 15%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 85% 70%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(2px 2px at 50% 40%, rgba(255,255,255,0.2) 0%, transparent 100%),
+        radial-gradient(1px 1px at 20% 85%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 60% 90%, rgba(255,255,255,0.3) 0%, transparent 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrapper {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2rem;
+      padding: 2rem;
+      max-width: 800px;
+      width: 100%;
+    }
+
+    /* --- SCORE DASHBOARD (top-left) --- */
+    .score-dashboard {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: rgba(22, 33, 62, 0.85);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 48px;
+      padding: 0.7rem 1.8rem;
+      display: flex;
+      align-items: center;
+      gap: 1.2rem;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 215, 0, 0.2) inset;
+      z-index: 200;
+      transition: transform 0.2s ease;
+    }
+
+    .score-dashboard:hover {
+      transform: scale(1.02);
+      background: rgba(22, 33, 62, 0.95);
+    }
+
+    .dashboard-icon {
+      font-size: 1.8rem;
+      filter: drop-shadow(0 0 5px gold);
+    }
+
+    .dashboard-stats {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .dashboard-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: rgba(255, 255, 255, 0.5);
+      font-weight: 700;
+    }
+
+    .dashboard-value {
+      font-family: 'Fredoka One', cursive;
+      font-size: 2.1rem;
+      line-height: 1.1;
+      background: linear-gradient(to right, #f7e05e, #ffb347);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-top: -4px;
+    }
+
+    /* WARNING BANNER (below dashboard) */
+    .refresh-warning {
+      position: fixed;
+      top: 88px;
+      left: 20px;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(8px);
+      border-left: 5px solid #FF6B6B;
+      border-radius: 18px;
+      padding: 0.6rem 1.4rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #ffe8b6;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+      z-index: 199;
+      white-space: nowrap;
+      letter-spacing: 0.02em;
+      border: 1px solid rgba(255, 107, 107, 0.3);
+    }
+
+    .refresh-warning span {
+      margin-right: 8px;
+      font-size: 1.1rem;
+    }
+
+    @media (max-width: 550px) {
+      .refresh-warning {
+        white-space: normal;
+        max-width: 220px;
+        top: 90px;
+        font-size: 0.8rem;
+        line-height: 1.2;
+        padding: 0.5rem 1rem;
+      }
+      .score-dashboard {
+        padding: 0.5rem 1.2rem;
+      }
+      .dashboard-value { font-size: 1.8rem; }
+    }
+
+    /* Title */
+    .title {
+      font-family: 'Fredoka One', cursive;
+      font-size: clamp(1.6rem, 5vw, 3rem);
+      text-align: center;
+      line-height: 1.1;
+      background: linear-gradient(135deg, #FF6B6B, #FECA57, #48DBFB, #1DD1A1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      filter: drop-shadow(0 0 20px rgba(255,107,107,0.4));
+      animation: titlePulse 3s ease-in-out infinite;
+    }
+
+    @keyframes titlePulse {
+      0%, 100% { filter: drop-shadow(0 0 20px rgba(255,107,107,0.4)); }
+      50% { filter: drop-shadow(0 0 40px rgba(72,219,251,0.6)); }
+    }
+
+    /* Hide old counter */
+    .counter-wrap {
+      display: none;
+    }
+
+    /* Score buttons */
+    .buttons {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .score-btn {
+      width: 90px;
+      height: 90px;
+      border-radius: 24px;
+      border: none;
+      cursor: pointer;
+      font-family: 'Fredoka One', cursive;
+      font-size: 2.5rem;
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+    }
+
+    .score-btn::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: rgba(255,255,255,0.15);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .score-btn:hover::before { opacity: 1; }
+
+    .score-btn:active {
+      transform: scale(0.92) !important;
+    }
+
+    .score-btn:hover {
+      transform: translateY(-6px) scale(1.05);
+    }
+
+    .score-btn[data-score="1"] { background: linear-gradient(135deg, #FF6B6B, #ee5a24); box-shadow: 0 8px 30px rgba(255,107,107,0.5); }
+    .score-btn[data-score="2"] { background: linear-gradient(135deg, #FF9F43, #e67e22); box-shadow: 0 8px 30px rgba(255,159,67,0.5); }
+    .score-btn[data-score="3"] { background: linear-gradient(135deg, #FECA57, #f9ca24); box-shadow: 0 8px 30px rgba(254,202,87,0.5); }
+    .score-btn[data-score="4"] { background: linear-gradient(135deg, #48DBFB, #0abde3); box-shadow: 0 8px 30px rgba(72,219,251,0.5); }
+    .score-btn[data-score="5"] { background: linear-gradient(135deg, #1DD1A1, #10ac84); box-shadow: 0 8px 30px rgba(29,209,161,0.5); }
+
+    /* Ripple */
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.4);
+      transform: scale(0);
+      animation: rippleAnim 0.6s linear;
+      pointer-events: none;
+    }
+    @keyframes rippleAnim {
+      to { transform: scale(4); opacity: 0; }
+    }
+
+    /* Score label (descriptive) */
+    .score-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: rgba(255,255,255,0.5);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-align: center;
+    }
+
+    /* Floating image container */
+    #img-stage {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    .fly-img {
+      position: absolute;
+      width: clamp(150px, 25vw, 300px);
+      height: clamp(150px, 25vw, 300px);
+      object-fit: cover;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+      border: 3px solid rgba(255,255,255,0.3);
+      animation: flyUp 3s ease forwards;
+    }
+
+    @keyframes flyUp {
+      0% {
+        transform: translateY(80px) scale(0.5) rotate(-5deg);
+        opacity: 0;
+      }
+      15% {
+        transform: translateY(0px) scale(1.05) rotate(2deg);
+        opacity: 1;
+      }
+      30% {
+        transform: translateY(-15px) scale(1) rotate(-1deg);
+        opacity: 1;
+      }
+      50% {
+        transform: translateY(-5px) scale(1) rotate(1deg);
+        opacity: 1;
+      }
+      70% {
+        transform: translateY(-20px) scale(1) rotate(-1deg);
+        opacity: 1;
+      }
+      85% {
+        transform: translateY(-25px) scale(0.95) rotate(0deg);
+        opacity: 0.8;
+      }
+      100% {
+        transform: translateY(-60px) scale(0.8) rotate(3deg);
+        opacity: 0;
+      }
+    }
+
+    /* Score ring */
+    .score-ring {
+      position: fixed;
+      border-radius: 50%;
+      border: 4px solid rgba(255,255,255,0.7);
+      pointer-events: none;
+      z-index: 99;
+      animation: ringBurst 0.6s ease-out forwards;
+    }
+
+    @keyframes ringBurst {
+      from { transform: scale(0); opacity: 1; }
+      to { transform: scale(3); opacity: 0; }
+    }
+
+    /* Hint text */
+    .hint {
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.35);
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    @media (max-width: 500px) {
+      .score-btn { width: 68px; height: 68px; font-size: 1.9rem; border-radius: 18px; }
+      .buttons { gap: 0.6rem; }
+    }
+  </style>
+</head>
+<body>
+  <!-- DASHBOARD (top-left) -->
+  <div class="score-dashboard">
+    <span class="dashboard-icon">🏆</span>
+    <div class="dashboard-stats">
+      <span class="dashboard-label">total scores</span>
+      <span class="dashboard-value" id="dashboardCounter">0</span>
+    </div>
+  </div>
+
+  <!-- WARNING MESSAGE -->
+  <div class="refresh-warning">
+    <span>⚠️</span> Be careful, refreshing will delete all your scores
+  </div>
+
+  <div class="wrapper">
+    <h1 class="title">Student Active<br/>Evaluation System</h1>
+
+    <!-- hidden old counter (kept for reference, but we'll update both via JS) -->
+    <div class="counter-wrap">
+      <span class="counter-label">Total Evaluations</span>
+      <span class="counter-value" id="counter">0</span>
+    </div>
+
+    <div class="buttons">
+      <div style="display:flex;flex-direction:column;align-items:center;gap:0.5rem">
+        <button class="score-btn" data-score="1">1</button>
+        <span class="score-label">Needs Work</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:0.5rem">
+        <button class="score-btn" data-score="2">2</button>
+        <span class="score-label">Developing</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:0.5rem">
+        <button class="score-btn" data-score="3">3</button>
+        <span class="score-label">Good</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:0.5rem">
+        <button class="score-btn" data-score="4">4</button>
+        <span class="score-label">Great</span>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;gap:0.5rem">
+        <button class="score-btn" data-score="5">5</button>
+        <span class="score-label">Excellent!</span>
+      </div>
+    </div>
+
+    <p class="hint">Click a score to evaluate a student ✦</p>
+  </div>
+
+  <div id="img-stage"></div>
+
+  <script>
+    // mapping: each score uses its own image (1.png, 2.png, ...)
+    // we no longer randomize; image matches the score number.
+    const IMAGES = {
+      1: '1.png',
+      2: '2.png',
+      3: '3.png',
+      4: '4.png',
+      5: '5.png'
+    };
+
+    function playScoreSound(score) {
+      const audio = new Audio(`${score}.mp3`);
+      audio.volume = 0.85;
+      audio.play().catch(() => {});
+    }
+
+    const SCORE_COLORS = {
+      1: '#FF6B6B',
+      2: '#FF9F43',
+      3: '#FECA57',
+      4: '#48DBFB',
+      5: '#1DD1A1'
+    };
+
+    let count = 0;
+    const counterEl = document.getElementById('counter');           // hidden old counter
+    const dashboardCounter = document.getElementById('dashboardCounter'); // visible dashboard
+    const stage = document.getElementById('img-stage');
+
+    function spawnRing(x, y, color) {
+      const ring = document.createElement('div');
+      ring.className = 'score-ring';
+      const size = 60;
+      ring.style.cssText = `
+        left: ${x - size/2}px;
+        top: ${y - size/2}px;
+        width: ${size}px;
+        height: ${size}px;
+        border-color: ${color};
+      `;
+      document.body.appendChild(ring);
+      setTimeout(() => ring.remove(), 700);
+    }
+
+    // spawnImage now uses the score to pick the exact image (e.g., 5.png for score 5)
+    function spawnImage(score) {
+      // get the exact filename for this score
+      const src = IMAGES[score];  // e.g. IMAGES[5] -> '5.png'
+
+      const img = document.createElement('img');
+      img.className = 'fly-img';
+      img.src = src;
+      img.alt = `Score ${score}`;
+
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const imgSize = Math.min(200, vw * 0.18);
+      const x = Math.random() * (vw - imgSize - 40) + 20;
+      const y = vh - imgSize - 60;
+
+      img.style.left = x + 'px';
+      img.style.top = y + 'px';
+
+      img.style.borderColor = SCORE_COLORS[score] + '99';
+      img.style.boxShadow = `0 20px 60px rgba(0,0,0,0.5), 0 0 30px ${SCORE_COLORS[score]}55`;
+
+      stage.appendChild(img);
+      setTimeout(() => img.remove(), 3100);
+    }
+
+    function addRipple(btn, e) {
+      const rect = btn.getBoundingClientRect();
+      const r = document.createElement('span');
+      r.className = 'ripple';
+      const size = Math.max(rect.width, rect.height) * 2;
+      r.style.width = r.style.height = size + 'px';
+      r.style.left = (e.clientX - rect.left - size/2) + 'px';
+      r.style.top = (e.clientY - rect.top - size/2) + 'px';
+      btn.appendChild(r);
+      setTimeout(() => r.remove(), 700);
+    }
+
+    // Update both counters
+    function updateCounters(newCount) {
+      count = newCount;
+      counterEl.textContent = count;           // update hidden (legacy)
+      dashboardCounter.textContent = count;    // update visible dashboard
+
+      // bump animation on dashboard
+      dashboardCounter.classList.remove('bump');
+      void dashboardCounter.offsetWidth;
+      dashboardCounter.classList.add('bump');
+    }
+
+    // bump keyframes
+    const style = document.createElement('style');
+    style.textContent = `
+      .dashboard-value.bump { animation: bump 0.3s ease; }
+      @keyframes bump {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.4); }
+        100% { transform: scale(1); }
+      }
+    `;
+    document.head.appendChild(style);
+
+    // attach click handlers
+    document.querySelectorAll('.score-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const score = parseInt(btn.dataset.score);
+
+        // Ripple on button
+        addRipple(btn, e);
+
+        // Play score-matched sound
+        playScoreSound(score);
+
+        // Ring burst at click position
+        spawnRing(e.clientX, e.clientY, SCORE_COLORS[score]);
+
+        // Spawn flying image — now always the correct number .png
+        spawnImage(score);
+
+        // Update counters
+        updateCounters(count + 1);
+      });
+    });
+
+    // initialise counters to 0
+    updateCounters(0);
+  </script>
+</body>
+</html>
