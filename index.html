@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Student Active Evaluation System</title>
+  <title>Ур чадварын уралдаан</title>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;800&display=swap" rel="stylesheet"/>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -370,42 +370,42 @@
 
   <!-- WARNING MESSAGE (position adjusted) -->
   <div class="refresh-warning">
-    <span>⚠️</span> Be careful, refreshing will delete all your scores
+    <span>⚠️</span> Анхаар! Хуудсыг шинэчилбэл /Refresh/ өгсөн бүх үнэлгээ арилна.
   </div>
 
   <div class="wrapper">
-    <h1 class="title">Student Active<br/>Evaluation System</h1>
+    <h1 class="title">Д.Золбоо<br/>Ур чадварын уралдаан</h1>
 
     <!-- hidden old total counter (we keep but no longer display) -->
     <div class="counter-wrap">
-      <span class="counter-label">Total Evaluations</span>
+      <span class="counter-label">Нийт үнэлгээ</span>
       <span class="counter-value" id="counter">0</span>
     </div>
 
     <div class="buttons">
       <div style="display:flex;flex-direction:column;align-items:center;gap:0.5rem">
         <button class="score-btn" data-score="1">1</button>
-        <span class="score-label">Needs Work</span>
+        <span class="score-label">Сайжруулах шаардлагатай</span>
       </div>
       <div style="display:flex;flex-direction:column;align-items:center;gap:0.5rem">
         <button class="score-btn" data-score="2">2</button>
-        <span class="score-label">Developing</span>
+        <span class="score-label">Хөгжиж байна</span>
       </div>
       <div style="display:flex;flex-direction:column;align-items:center;gap:0.5rem">
         <button class="score-btn" data-score="3">3</button>
-        <span class="score-label">Good</span>
+        <span class="score-label">Сайн</span>
       </div>
       <div style="display:flex;flex-direction:column;align-items:center;gap:0.5rem">
         <button class="score-btn" data-score="4">4</button>
-        <span class="score-label">Great</span>
+        <span class="score-label">Маш сайн</span>
       </div>
       <div style="display:flex;flex-direction:column;align-items:center;gap:0.5rem">
         <button class="score-btn" data-score="5">5</button>
-        <span class="score-label">Excellent!</span>
+        <span class="score-label">Онц сайн!</span>
       </div>
     </div>
 
-    <p class="hint">Click a score to evaluate a student ✦</p>
+    <p class="hint">👉 Сурагчийг үнэлэхдээ 1–5 онооноос сонгон дарна уу ✦</p>
   </div>
 
   <div id="img-stage"></div>
